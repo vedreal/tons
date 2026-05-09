@@ -21,7 +21,7 @@ export default function FriendsPage() {
   const share = () => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.openTelegramLink) {
-      tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join TON Season — earn TONS with me! 💎")}`);
+      tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join TON Season — earn TONS with me!")}`);
     } else {
       window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}`, "_blank");
     }

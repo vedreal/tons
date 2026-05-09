@@ -1,22 +1,21 @@
-// Tiny global store using React + localStorage
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 type State = {
   tons: number;
   energy: number;
   maxEnergy: number;
-  taps: number;
+  winning: number;
   refCode: string;
   friends: number;
   completedTasks: string[];
 };
 
-const KEY = "ton-season-state-v1";
+const KEY = "ton-season-state-v2";
 const initial: State = {
-  tons: 1280,
-  energy: 1000,
-  maxEnergy: 1000,
-  taps: 0,
+  tons: 0,
+  energy: 10,
+  maxEnergy: 10,
+  winning: 0,
   refCode: "TONS" + Math.random().toString(36).slice(2, 8).toUpperCase(),
   friends: 3,
   completedTasks: [],
@@ -39,9 +38,14 @@ function emit() {
 export const store = {
   get: () => state,
   subscribe: (cb: () => void) => { listeners.add(cb); return () => listeners.delete(cb); },
-  addTons(n: number) { state = { ...state, tons: state.tons + n, taps: state.taps + 1 }; emit(); },
-  spendEnergy(n: number) { state = { ...state, energy: Math.max(0, state.energy - n) }; emit(); },
-  regen(n: number) { state = { ...state, energy: Math.min(state.maxEnergy, state.energy + n) }; emit(); },
+  addTons(n: number) { state = { ...state, tons: state.tons + n }; emit(); },
+  spendGameEnergy() {
+    if (state.energy <= 0) return false;
+    state = { ...state, energy: state.energy - 1 };
+    emit();
+    return true;
+  },
+  addWinning() { state = { ...state, winning: state.winning + 1 }; emit(); },
   completeTask(id: string, reward: number) {
     if (state.completedTasks.includes(id)) return;
     state = { ...state, completedTasks: [...state.completedTasks, id], tons: state.tons + reward };
@@ -50,17 +54,7 @@ export const store = {
 };
 
 export function useStore() {
-  const snap = useSyncExternalStore(store.subscribe, store.get, store.get);
-  // energy regen
-  useEffect(() => {
-    const t = setInterval(() => store.regen(2), 1000);
-    return () => clearInterval(t);
-  }, []);
-  return snap;
+  return useSyncExternalStore(store.subscribe, store.get, store.get);
 }
 
-export function useMounted() {
-  const [m, setM] = useState(false);
-  useEffect(() => setM(true), []);
-  return m;
-}
+export { useEffect };

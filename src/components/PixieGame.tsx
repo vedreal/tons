@@ -1,18 +1,28 @@
 import { useEffect, useRef } from "react";
-import { Application, Container, Graphics, Text } from "pixi.js";
+import { Application, Assets, Container, Graphics, Sprite, Text } from "pixi.js";
 
 type Props = {
-  onCoin: (value: number) => void;
-  onCombo: (combo: number) => void;
+  onScore: (value: number) => void;
+  onGameOver: () => void;
+  onFinished: () => void;
+  onTick: (secondsLeft: number) => void;
 };
 
-// Lightweight cartoon coin field + swipe combo ribbon, drawn purely with Graphics.
-export default function PixieGame({ onCoin, onCombo }: Props) {
+const COIN_IMG = "https://gold-defensive-cattle-30.mypinata.cloud/ipfs/bafkreie6xttzzc7auyoajanpwqnef2cpuvakrs5z7s5h6d4kcgvqmfmu3i";
+const GAME_DURATION = 15;
+const SPAWN_INTERVAL_MS = 2000;
+const BOMB_CHANCE = 0.22;
+
+export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const onCoinRef = useRef(onCoin);
-  const onComboRef = useRef(onCombo);
-  onCoinRef.current = onCoin;
-  onComboRef.current = onCombo;
+  const onScoreRef = useRef(onScore);
+  const onGameOverRef = useRef(onGameOver);
+  const onFinishedRef = useRef(onFinished);
+  const onTickRef = useRef(onTick);
+  onScoreRef.current = onScore;
+  onGameOverRef.current = onGameOver;
+  onFinishedRef.current = onFinished;
+  onTickRef.current = onTick;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -29,12 +39,16 @@ export default function PixieGame({ onCoin, onCombo }: Props) {
         resolution: Math.min(window.devicePixelRatio || 1, 2),
         autoDensity: true,
       });
-      if (destroyed) {
-        app.destroy(true);
-        return;
-      }
+      if (destroyed) { app.destroy(true); return; }
       host.appendChild(app.canvas);
 
+      let coinTexture: any = null;
+      try {
+        coinTexture = await Assets.load(COIN_IMG);
+      } catch { /* fallback to drawn coin */ }
+      if (destroyed) { app.destroy(true); return; }
+
+      // Stars background
       const stars = new Container();
       app.stage.addChild(stars);
       for (let i = 0; i < 28; i++) {
@@ -48,145 +62,183 @@ export default function PixieGame({ onCoin, onCombo }: Props) {
       const coins = new Container();
       app.stage.addChild(coins);
 
-      const ribbon = new Container();
-      app.stage.addChild(ribbon);
+      const particles = new Container();
+      app.stage.addChild(particles);
 
-      let combo = 0;
-      let comboTimer = 0;
+      let gameOver = false;
+      let timeLeft = GAME_DURATION;
+      let elapsedMs = 0;
+      let lastSecond = GAME_DURATION;
+      let spawnTimer = 0;
 
       function makeCoin() {
+        const isBomb = Math.random() < BOMB_CHANCE;
         const c = new Container();
-        const r = 22 + Math.random() * 10;
-        const shadow = new Graphics().ellipse(0, r + 6, r * 0.7, 4).fill({ color: 0x0a1628, alpha: 0.25 });
-        const body = new Graphics()
-          .circle(0, 0, r).fill(0x0098ea)
-          .circle(-r * 0.3, -r * 0.3, r * 0.55).fill({ color: 0x7dd3fc, alpha: 0.9 })
-          .circle(0, 0, r).stroke({ color: 0x0f62fe, width: 3, alpha: 0.9 });
-        const t = new Text({
-          text: "T",
-          style: { fontFamily: "system-ui", fontSize: r, fontWeight: "900", fill: 0xffffff },
-        });
-        t.anchor.set(0.5);
-        c.addChild(shadow, body, t);
-        c.x = 40 + Math.random() * (app.screen.width - 80);
-        c.y = -40;
-        (c as any)._vy = 1.2 + Math.random() * 1.6;
-        (c as any)._vr = (Math.random() - 0.5) * 0.06;
-        (c as any)._r = r;
+        const r = 24;
+
+        if (isBomb) {
+          const txt = new Text({
+            text: "💣",
+            style: { fontFamily: "system-ui", fontSize: 44 },
+          });
+          txt.anchor.set(0.5);
+          c.addChild(txt);
+          (c as any)._r = r;
+          (c as any)._isBomb = true;
+        } else {
+          if (coinTexture) {
+            const sprite = new Sprite(coinTexture);
+            sprite.anchor.set(0.5);
+            sprite.width = r * 2;
+            sprite.height = r * 2;
+            c.addChild(sprite);
+          } else {
+            // fallback drawn coin
+            const body = new Graphics()
+              .circle(0, 0, r).fill(0x0098ea)
+              .circle(-r * 0.3, -r * 0.3, r * 0.55).fill({ color: 0x7dd3fc, alpha: 0.9 })
+              .circle(0, 0, r).stroke({ color: 0x0f62fe, width: 3, alpha: 0.9 });
+            const t = new Text({
+              text: "T",
+              style: { fontFamily: "system-ui", fontSize: r, fontWeight: "900", fill: 0xffffff },
+            });
+            t.anchor.set(0.5);
+            c.addChild(body, t);
+          }
+          (c as any)._r = r;
+          (c as any)._isBomb = false;
+        }
+
+        c.x = r + 16 + Math.random() * (app.screen.width - r * 2 - 32);
+        c.y = -r - 10;
+        (c as any)._vy = 1.5 + Math.random() * 1.4;
         c.eventMode = "static";
         c.cursor = "pointer";
         c.on("pointerdown", () => {
-          combo = Math.min(combo + 1, 99);
-          comboTimer = 60;
-          const value = Math.round(r) + combo;
-          onCoin(value);
-          onCombo(combo);
-          // burst
-          for (let i = 0; i < 8; i++) {
-            const p = new Graphics().circle(0, 0, 3).fill(0x7dd3fc);
-            p.x = c.x;
-            p.y = c.y;
-            const ang = (i / 8) * Math.PI * 2;
-            (p as any)._vx = Math.cos(ang) * 4;
-            (p as any)._vy = Math.sin(ang) * 4;
-            (p as any)._life = 30;
-            ribbon.addChild(p);
+          if (gameOver) return;
+          if ((c as any)._isBomb) {
+            gameOver = true;
+            coins.removeChild(c);
+            c.destroy();
+            // small red flash particles
+            for (let i = 0; i < 8; i++) {
+              const p = new Graphics().circle(0, 0, 4).fill(0xff3333);
+              p.x = c.x; p.y = c.y;
+              const ang = (i / 8) * Math.PI * 2;
+              (p as any)._vx = Math.cos(ang) * 5;
+              (p as any)._vy = Math.sin(ang) * 5;
+              (p as any)._life = 30;
+              particles.addChild(p);
+            }
+            setTimeout(() => onGameOverRef.current(), 200);
+          } else {
+            const val = 10 + Math.floor(Math.random() * 5);
+            onScoreRef.current(val);
+            // burst
+            for (let i = 0; i < 8; i++) {
+              const p = new Graphics().circle(0, 0, 3).fill(0x7dd3fc);
+              p.x = c.x; p.y = c.y;
+              const ang = (i / 8) * Math.PI * 2;
+              (p as any)._vx = Math.cos(ang) * 4;
+              (p as any)._vy = Math.sin(ang) * 4;
+              (p as any)._life = 30;
+              particles.addChild(p);
+            }
+            // floating text
+            const txt = new Text({
+              text: `+${val}`,
+              style: { fontFamily: "system-ui", fontSize: 20, fontWeight: "900", fill: 0xffffff, stroke: { color: 0x0f62fe, width: 4 } },
+            });
+            txt.anchor.set(0.5);
+            txt.x = c.x; txt.y = c.y;
+            (txt as any)._float = 50;
+            particles.addChild(txt);
+            coins.removeChild(c);
+            c.destroy();
           }
-          // floating score text
-          const txt = new Text({
-            text: `+${value}`,
-            style: { fontFamily: "system-ui", fontSize: 22, fontWeight: "900", fill: 0xffffff, stroke: { color: 0x0f62fe, width: 4 } },
-          });
-          txt.anchor.set(0.5);
-          txt.x = c.x;
-          txt.y = c.y;
-          (txt as any)._float = 60;
-          ribbon.addChild(txt);
-          coins.removeChild(c);
-          c.destroy();
         });
         coins.addChild(c);
       }
 
-      let spawn = 0;
       const ticker = (time: any) => {
+        if (gameOver) return;
         const dt = time.deltaTime;
-        spawn += dt;
-        if (spawn > 22) {
-          spawn = 0;
+        const dtMs = time.deltaMS ?? (dt / 60) * 1000;
+
+        elapsedMs += dtMs;
+        spawnTimer += dtMs;
+
+        // Spawn coins
+        if (spawnTimer >= SPAWN_INTERVAL_MS) {
+          spawnTimer -= SPAWN_INTERVAL_MS;
           makeCoin();
         }
+
+        // Update time
+        timeLeft = Math.max(0, GAME_DURATION - elapsedMs / 1000);
+        const secondsLeftInt = Math.ceil(timeLeft);
+        if (secondsLeftInt !== lastSecond) {
+          lastSecond = secondsLeftInt;
+          onTickRef.current(secondsLeftInt);
+        }
+
+        // Stars
         for (const s of stars.children) {
           s.y += (s as any)._sp * dt;
           if (s.y > app.screen.height) s.y = 0;
         }
+
+        // Move coins
         for (const c of [...coins.children]) {
           c.y += (c as any)._vy * dt;
-          c.rotation += (c as any)._vr * dt;
           if (c.y > app.screen.height + 60) {
-            coins.removeChild(c);
-            c.destroy();
-            combo = 0;
-            onCombo(0);
+            // Coin missed
+            if (!(c as any)._isBomb) {
+              gameOver = true;
+              coins.removeChild(c);
+              c.destroy();
+              setTimeout(() => onGameOverRef.current(), 100);
+              return;
+            } else {
+              // Bomb that went off screen — just remove it, not a game over
+              coins.removeChild(c);
+              c.destroy();
+            }
           }
         }
-        for (const p of [...ribbon.children]) {
+
+        // Particles
+        for (const p of [...particles.children]) {
           if ((p as any)._vx !== undefined) {
             p.x += (p as any)._vx;
             p.y += (p as any)._vy;
-            (p as any)._vy += 0.2;
+            (p as any)._vy += 0.25;
             (p as any)._life -= dt;
             p.alpha = Math.max(0, (p as any)._life / 30);
-            if ((p as any)._life <= 0) { ribbon.removeChild(p); p.destroy(); }
+            if ((p as any)._life <= 0) { particles.removeChild(p); p.destroy(); }
           } else if ((p as any)._float !== undefined) {
             p.y -= 1.2 * dt;
             (p as any)._float -= dt;
-            p.alpha = Math.max(0, (p as any)._float / 60);
-            if ((p as any)._float <= 0) { ribbon.removeChild(p); p.destroy(); }
+            p.alpha = Math.max(0, (p as any)._float / 50);
+            if ((p as any)._float <= 0) { particles.removeChild(p); p.destroy(); }
           }
         }
-        if (comboTimer > 0) {
-          comboTimer -= dt;
-          if (comboTimer <= 0) { combo = 0; onCombo(0); }
+
+        // Game finished
+        if (timeLeft <= 0 && !gameOver) {
+          gameOver = true;
+          // Clear remaining coins (don't trigger game over)
+          for (const c of [...coins.children]) { coins.removeChild(c); c.destroy(); }
+          setTimeout(() => onFinishedRef.current(), 100);
         }
       };
+
       app.ticker.add(ticker);
       cleanupFns.push(() => app.ticker.remove(ticker));
 
-      // swipe combo: swipe across screen to vacuum coins
-      let sx = 0, sy = 0, swiping = false;
-      const onDown = (e: PointerEvent) => { swiping = true; sx = e.clientX; sy = e.clientY; };
-      const onMove = (e: PointerEvent) => {
-        if (!swiping) return;
-        const dx = e.clientX - sx;
-        if (Math.abs(dx) > 60) {
-          // collect all coins currently on screen
-          for (const c of [...coins.children]) {
-            const v = Math.round((c as any)._r);
-            combo = Math.min(combo + 1, 99);
-            comboTimer = 60;
-            onCoin(v + combo);
-            onCombo(combo);
-            const trail = new Graphics().circle(0, 0, 4).fill(0x7dd3fc);
-            trail.x = c.x; trail.y = c.y;
-            (trail as any)._vx = dx > 0 ? 6 : -6;
-            (trail as any)._vy = -2;
-            (trail as any)._life = 30;
-            ribbon.addChild(trail);
-            coins.removeChild(c); c.destroy();
-          }
-          swiping = false;
-        }
-      };
-      const onUp = () => { swiping = false; };
-      host.addEventListener("pointerdown", onDown);
-      window.addEventListener("pointermove", onMove);
-      window.addEventListener("pointerup", onUp);
-      cleanupFns.push(() => {
-        host.removeEventListener("pointerdown", onDown);
-        window.removeEventListener("pointermove", onMove);
-        window.removeEventListener("pointerup", onUp);
-      });
+      // Spawn first coin immediately after a short delay
+      const firstSpawn = setTimeout(() => { if (!destroyed && !gameOver) makeCoin(); }, 600);
+      cleanupFns.push(() => clearTimeout(firstSpawn));
     })();
 
     return () => {

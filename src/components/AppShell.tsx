@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { GamepadOrbIcon, CheckBurstIcon, TrophyOrbIcon, FriendsIcon, DiamondCoinIcon } from "./icons/TonIcons";
+import { GamepadOrbIcon, CheckBurstIcon, TrophyOrbIcon, FriendsIcon } from "./icons/TonIcons";
 import { useStore } from "@/lib/store";
 
 const tabs = [
@@ -15,23 +15,23 @@ export default function AppShell() {
 
   return (
     <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col overflow-hidden">
-      {/* Decorative blobs */}
       <div aria-hidden className="pointer-events-none absolute -top-32 -left-20 h-72 w-72 rounded-full bg-gradient-ton opacity-30 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-[oklch(0.7_0.16_232)] opacity-40 blur-3xl" />
 
-      {/* Top bar */}
       <header className="relative z-10 flex items-center justify-between px-4 pt-5">
         <div className="flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-ton shadow-ton">
-            <DiamondCoinIcon className="h-7 w-7 drop-shadow" />
+            <svg viewBox="0 0 32 32" className="h-7 w-7" fill="none">
+              <circle cx="16" cy="16" r="16" fill="white" fillOpacity="0.15" />
+              <text x="16" y="22" textAnchor="middle" fontSize="18" fontWeight="900" fill="white" fontFamily="system-ui">P</text>
+            </svg>
           </div>
           <div className="leading-tight">
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">TON Season</div>
             <div className="text-sm font-extrabold text-gradient-ton">Pixie Drop</div>
           </div>
         </div>
-        <div className="glass-card flex items-center gap-2 rounded-full px-3 py-1.5">
-          <DiamondCoinIcon className="h-5 w-5" />
+        <div className="glass-card flex items-center gap-1.5 rounded-full px-3 py-1.5">
           <span className="text-sm font-extrabold tabular-nums text-foreground">{tons.toLocaleString()}</span>
           <span className="text-[10px] font-bold text-muted-foreground">TONS</span>
         </div>
@@ -41,7 +41,6 @@ export default function AppShell() {
         <Outlet />
       </main>
 
-      {/* Bottom Nav */}
       <nav className="relative z-10 px-3 pb-4 pt-2">
         <div className="glass-card flex items-center justify-around rounded-3xl p-2">
           {tabs.map(({ to, label, Icon }) => {
