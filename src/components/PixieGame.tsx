@@ -10,8 +10,8 @@ type Props = {
 
 const COIN_IMG = "https://gold-defensive-cattle-30.mypinata.cloud/ipfs/bafkreie6xttzzc7auyoajanpwqnef2cpuvakrs5z7s5h6d4kcgvqmfmu3i";
 const GAME_DURATION = 15;
-const SPAWN_INTERVAL_MS = 2000;
-const BOMB_CHANCE = 0.22;
+const SPAWN_INTERVAL_TICKS = 22; // ticks between spawns (~0.37s at 60fps) — matches original feel
+const BOMB_CHANCE = 0.18;
 
 export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -69,7 +69,7 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
       let timeLeft = GAME_DURATION;
       let elapsedMs = 0;
       let lastSecond = GAME_DURATION;
-      let spawnTimer = 0;
+      let spawnTicks = 0;
 
       function makeCoin() {
         const isBomb = Math.random() < BOMB_CHANCE;
@@ -166,11 +166,11 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
         const dtMs = time.deltaMS ?? (dt / 60) * 1000;
 
         elapsedMs += dtMs;
-        spawnTimer += dtMs;
+        spawnTicks += dt;
 
-        // Spawn coins
-        if (spawnTimer >= SPAWN_INTERVAL_MS) {
-          spawnTimer -= SPAWN_INTERVAL_MS;
+        // Spawn coins at same cadence as the original (every ~22 ticks)
+        if (spawnTicks >= SPAWN_INTERVAL_TICKS) {
+          spawnTicks -= SPAWN_INTERVAL_TICKS;
           makeCoin();
         }
 
@@ -236,9 +236,8 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
       app.ticker.add(ticker);
       cleanupFns.push(() => app.ticker.remove(ticker));
 
-      // Spawn first coin immediately after a short delay
-      const firstSpawn = setTimeout(() => { if (!destroyed && !gameOver) makeCoin(); }, 600);
-      cleanupFns.push(() => clearTimeout(firstSpawn));
+      // Spawn first coin immediately
+      makeCoin();
     })();
 
     return () => {
