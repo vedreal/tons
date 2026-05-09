@@ -5,23 +5,25 @@ import { DiamondCoinIcon, PixieIcon, TrophyOrbIcon } from "@/components/icons/To
 export const Route = createFileRoute("/leaderboard")({ component: LeaderboardPage });
 
 const SEED = [
-  { name: "PixieKing", tons: 482300 },
-  { name: "TonMaster", tons: 318420 },
-  { name: "CryptoFox", tons: 219800 },
-  { name: "MoonSwiper", tons: 154900 },
-  { name: "StarTapper", tons: 98700 },
-  { name: "BlueFalcon", tons: 76200 },
-  { name: "NeoDrip", tons: 54100 },
-  { name: "Voyager", tons: 41200 },
+  { name: "PixieKing",   score: 482300 },
+  { name: "TonMaster",   score: 318420 },
+  { name: "CryptoFox",   score: 219800 },
+  { name: "MoonSwiper",  score: 154900 },
+  { name: "StarTapper",  score: 98700  },
+  { name: "BlueFalcon",  score: 76200  },
+  { name: "NeoDrip",     score: 54100  },
+  { name: "Voyager",     score: 41200  },
+  { name: "ZeroGrav",    score: 28900  },
+  { name: "NightOwl",    score: 18400  },
 ];
 
 export default function LeaderboardPage() {
-  const { tons } = useStore();
-  const me = { name: "You", tons };
-  const all = [...SEED, me].sort((a, b) => b.tons - a.tons);
+  const { score } = useStore();
+  const me = { name: "You", score };
+  const all = [...SEED, me].sort((a, b) => b.score - a.score);
   const myRank = all.findIndex((p) => p === me) + 1;
   const top3 = all.slice(0, 3);
-  const rest = all.slice(3, 12);
+  const rest = all.slice(3, 11);
 
   return (
     <div className="h-full overflow-y-auto px-4 pt-2 pb-4">
@@ -43,7 +45,7 @@ export default function LeaderboardPage() {
               </div>
               <div className="text-[11px] font-extrabold">{p?.name}</div>
               <div className="flex items-center gap-1 text-[10px] font-bold opacity-90">
-                <DiamondCoinIcon className="h-3 w-3" /> {p?.tons.toLocaleString()}
+                <DiamondCoinIcon className="h-3 w-3" /> {p?.score.toLocaleString()}
               </div>
               <div
                 className="mt-2 w-full rounded-t-2xl bg-white/15"
@@ -64,7 +66,7 @@ export default function LeaderboardPage() {
           <div className="text-[11px] text-muted-foreground">Keep tapping to climb!</div>
         </div>
         <div className="flex items-center gap-1 text-sm font-extrabold">
-          <DiamondCoinIcon className="h-5 w-5" /> {tons.toLocaleString()}
+          <DiamondCoinIcon className="h-5 w-5" /> {score.toLocaleString()}
         </div>
       </div>
 
@@ -78,7 +80,7 @@ export default function LeaderboardPage() {
               </div>
               <div className="flex-1 text-sm font-extrabold">{p.name}</div>
               <div className="flex items-center gap-1 text-xs font-bold tabular-nums">
-                <DiamondCoinIcon className="h-4 w-4" /> {p.tons.toLocaleString()}
+                <DiamondCoinIcon className="h-4 w-4" /> {p.score.toLocaleString()}
               </div>
             </div>
           );

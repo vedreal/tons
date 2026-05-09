@@ -37,7 +37,6 @@ export const DiamondCoinIcon = (p: SVGProps<SVGSVGElement>) => (
     <polygon points="32,4 60,28 32,28" fill="#7DD3FC" opacity="0.85" />
     <polygon points="32,4 4,28 32,28" fill="#ffffff" opacity="0.55" />
     <polygon points="32,28 60,28 32,60" fill="#0F62FE" opacity="0.4" />
-    <text x="32" y="44" textAnchor="middle" fontSize="14" fontWeight="900" fill="#fff" fontFamily="ui-rounded, system-ui">T</text>
   </svg>
 );
 

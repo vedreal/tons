@@ -50,7 +50,7 @@ function GamePage() {
       {/* Stat strip */}
       <div className="grid grid-cols-3 gap-2">
         <Stat label="SCORE" value={score.toLocaleString()} icon={<DiamondCoinIcon className="h-5 w-5" />} />
-        <Stat label="ENERGY" value={`${energy}/${maxEnergy}`} icon={<BoltIcon className="h-5 w-5" />} />
+        <Stat label="ENERGY" value={energy.toString()} icon={<BoltIcon className="h-5 w-5" />} />
         <Stat label="WINNING" value={winning.toString()} icon={<PixieIcon className="h-5 w-5" />} />
       </div>
 

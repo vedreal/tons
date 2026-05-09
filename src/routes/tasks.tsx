@@ -1,16 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { store, useStore } from "@/lib/store";
-import { BoltIcon, CheckBurstIcon, DiamondCoinIcon, FriendsIcon, RocketIcon } from "@/components/icons/TonIcons";
+import { BoltIcon, CheckBurstIcon, FriendsIcon, RocketIcon } from "@/components/icons/TonIcons";
 
 export const Route = createFileRoute("/tasks")({ component: TasksPage });
 
+const ENERGY_REWARD = 5;
+
 const TASKS = [
-  { id: "join-tg", title: "Join TON Season Channel", reward: 500, Icon: RocketIcon, cta: "Join" },
-  { id: "follow-x", title: "Follow on X / Twitter", reward: 300, Icon: BoltIcon, cta: "Follow" },
-  { id: "invite-1", title: "Invite 1 Friend", reward: 800, Icon: FriendsIcon, cta: "Invite" },
-  { id: "daily", title: "Daily Login Reward", reward: 150, Icon: DiamondCoinIcon, cta: "Claim" },
-  { id: "boost", title: "Boost the Channel", reward: 1000, Icon: BoltIcon, cta: "Boost" },
+  { id: "join-tg", title: "Join TON Season Channel", reward: ENERGY_REWARD, Icon: RocketIcon, cta: "Join" },
+  { id: "follow-x", title: "Follow on X / Twitter", reward: ENERGY_REWARD, Icon: BoltIcon, cta: "Follow" },
+  { id: "invite-1", title: "Invite 1 Friend", reward: ENERGY_REWARD, Icon: FriendsIcon, cta: "Invite" },
+  { id: "daily", title: "Daily Login Reward", reward: ENERGY_REWARD, Icon: BoltIcon, cta: "Claim" },
+  { id: "boost", title: "Boost the Channel", reward: ENERGY_REWARD, Icon: BoltIcon, cta: "Boost" },
 ];
 
 export default function TasksPage() {
@@ -35,7 +37,7 @@ export default function TasksPage() {
       <div className="mb-3 flex items-end justify-between">
         <div>
           <h1 className="text-2xl font-black text-gradient-ton">Quests</h1>
-          <p className="text-xs text-muted-foreground">Complete tasks to earn TONS</p>
+          <p className="text-xs text-muted-foreground">Complete tasks to earn ENERGY</p>
         </div>
         <div className="rounded-full bg-white/70 px-3 py-1 text-[11px] font-bold text-muted-foreground">
           {completedTasks.length}/{TASKS.length}
@@ -61,7 +63,7 @@ export default function TasksPage() {
             <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.85_0.1_232)]">Featured Quest</div>
             <div className="mt-0.5 text-lg font-black leading-tight">{featured.title}</div>
             <div className="mt-1 flex items-center gap-1 text-sm font-extrabold">
-              <DiamondCoinIcon className="h-5 w-5" /> +{featured.reward} TONS
+              <BoltIcon className="h-5 w-5" /> +{featured.reward} ENERGY
             </div>
             <button
               disabled={done}
@@ -99,7 +101,7 @@ export default function TasksPage() {
               <div className="flex-1">
                 <div className="text-sm font-extrabold">{t.title}</div>
                 <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
-                  <DiamondCoinIcon className="h-4 w-4" /> +{t.reward} TONS
+                  <BoltIcon className="h-4 w-4" /> +{t.reward} ENERGY
                 </div>
               </div>
               <div className={`grid h-9 w-9 place-items-center rounded-full ${isDone ? "bg-gradient-ton" : "bg-muted"}`}>

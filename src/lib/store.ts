@@ -5,6 +5,7 @@ type State = {
   energy: number;
   maxEnergy: number;
   winning: number;
+  score: number;
   refCode: string;
   friends: number;
   completedTasks: string[];
@@ -16,6 +17,7 @@ const initial: State = {
   energy: 10,
   maxEnergy: 10,
   winning: 0,
+  score: 0,
   refCode: "TONS" + Math.random().toString(36).slice(2, 8).toUpperCase(),
   friends: 3,
   completedTasks: [],
@@ -39,6 +41,8 @@ export const store = {
   get: () => state,
   subscribe: (cb: () => void) => { listeners.add(cb); return () => listeners.delete(cb); },
   addTons(n: number) { state = { ...state, tons: state.tons + n }; emit(); },
+  addEnergy(n: number) { state = { ...state, energy: state.energy + n }; emit(); },
+  addScore(n: number) { state = { ...state, score: state.score + n }; emit(); },
   spendGameEnergy() {
     if (state.energy <= 0) return false;
     state = { ...state, energy: state.energy - 1 };
@@ -48,7 +52,7 @@ export const store = {
   addWinning() { state = { ...state, winning: state.winning + 1 }; emit(); },
   completeTask(id: string, reward: number) {
     if (state.completedTasks.includes(id)) return;
-    state = { ...state, completedTasks: [...state.completedTasks, id], tons: state.tons + reward };
+    state = { ...state, completedTasks: [...state.completedTasks, id], energy: state.energy + reward };
     emit();
   },
 };

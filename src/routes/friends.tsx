@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
-import { DiamondCoinIcon, FriendsIcon, RocketIcon } from "@/components/icons/TonIcons";
+import { BoltIcon, FriendsIcon, RocketIcon } from "@/components/icons/TonIcons";
 
 export const Route = createFileRoute("/friends")({ component: FriendsPage });
 
 export default function FriendsPage() {
-  const { refCode, friends, tons } = useStore();
+  const { refCode, friends } = useStore();
   const [copied, setCopied] = useState(false);
   const link = `https://t.me/TonSeasonBot/app?startapp=${refCode}`;
 
@@ -21,22 +21,22 @@ export default function FriendsPage() {
   const share = () => {
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.openTelegramLink) {
-      tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join TON Season — earn TONS with me!")}`);
+      tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join TON Season — earn ENERGY with me!")}`);
     } else {
       window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}`, "_blank");
     }
   };
 
   const fakeFriends = [
-    { name: "alex_ton", earned: 1280 },
-    { name: "moon_pixie", earned: 940 },
-    { name: "blu3wolf", earned: 510 },
+    { name: "alex_ton",   earned: 12 },
+    { name: "moon_pixie", earned: 9  },
+    { name: "blu3wolf",   earned: 6  },
   ].slice(0, friends);
 
   return (
     <div className="h-full overflow-y-auto px-4 pt-2 pb-4">
       <h1 className="text-2xl font-black text-gradient-ton">Invite Friends</h1>
-      <p className="text-xs text-muted-foreground">Earn 10% of your friends' TONS forever</p>
+      <p className="text-xs text-muted-foreground">Earn ENERGY for every friend who joins</p>
 
       <div className="relative mt-3 overflow-hidden rounded-3xl bg-gradient-ton-deep p-5 text-white shadow-ton shine-overlay">
         <div className="flex items-center gap-3">
@@ -45,7 +45,7 @@ export default function FriendsPage() {
           </div>
           <div className="flex-1">
             <div className="text-[10px] uppercase tracking-[0.25em] opacity-80">Your bonus</div>
-            <div className="text-2xl font-black">+5,000 TONS</div>
+            <div className="text-2xl font-black">+3 ENERGY</div>
             <div className="text-[11px] opacity-80">per friend who joins</div>
           </div>
         </div>
@@ -75,10 +75,10 @@ export default function FriendsPage() {
           </div>
         </div>
         <div className="glass-card flex items-center gap-2 rounded-2xl p-3">
-          <DiamondCoinIcon className="h-9 w-9" />
+          <BoltIcon className="h-9 w-9" />
           <div>
             <div className="text-[10px] uppercase text-muted-foreground">Earned</div>
-            <div className="text-lg font-black">{Math.round(tons * 0.1).toLocaleString()}</div>
+            <div className="text-lg font-black">{friends * 3} ENERGY</div>
           </div>
         </div>
       </div>
@@ -92,7 +92,7 @@ export default function FriendsPage() {
             </div>
             <div className="flex-1 text-sm font-extrabold">@{f.name}</div>
             <div className="flex items-center gap-1 text-xs font-bold">
-              <DiamondCoinIcon className="h-4 w-4" /> +{f.earned}
+              <BoltIcon className="h-4 w-4" /> +{f.earned} ENERGY
             </div>
           </div>
         ))}
