@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Application, Assets, Container, Graphics, Sprite, Text } from "pixi.js";
+import { Application, Assets, Container, Graphics, ImageSource, Sprite, Text, Texture } from "pixi.js";
 
 type GameOverReason = "missed" | "bomb";
 
@@ -46,8 +46,19 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
 
       let coinTexture: any = null;
       try {
-        coinTexture = await Assets.load(COIN_IMG);
-      } catch { /* fallback to drawn coin */ }
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const el = new Image();
+          el.crossOrigin = "anonymous";
+          el.onload = () => resolve(el);
+          el.onerror = () => reject(new Error("img load failed"));
+          el.src = COIN_IMG;
+        });
+        coinTexture = new Texture({ source: new ImageSource({ resource: img }) });
+      } catch {
+        try {
+          coinTexture = await Assets.load(COIN_IMG);
+        } catch { /* fallback to drawn coin */ }
+      }
       if (destroyed) { app.destroy(true); return; }
 
       // Stars background
