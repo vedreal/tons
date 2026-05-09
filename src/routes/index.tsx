@@ -29,7 +29,10 @@ function GamePage() {
     setScore((s) => s + val);
   }, []);
 
-  const handleGameOver = useCallback(() => {
+  const [gameOverReason, setGameOverReason] = useState<"missed" | "bomb">("missed");
+
+  const handleGameOver = useCallback((reason: "missed" | "bomb") => {
+    setGameOverReason(reason);
     setGameState("gameover");
   }, []);
 
@@ -112,7 +115,9 @@ function GamePage() {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/50 backdrop-blur-sm">
             <div className="rounded-full bg-red-500/30 px-5 py-2 text-lg font-black text-red-200 border border-red-400/40">GAME OVER</div>
             <div className="text-center">
-              <div className="text-2xl font-black text-white">You missed a coin</div>
+              <div className="text-2xl font-black text-white">
+                {gameOverReason === "bomb" ? "You hit a bomb!" : "You missed a coin!"}
+              </div>
               <div className="mt-1 text-sm text-white/80">Score: <span className="font-extrabold text-white">{score}</span></div>
             </div>
             <div className="flex gap-3">

@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Application, Assets, Container, Graphics, Sprite, Text } from "pixi.js";
 
+type GameOverReason = "missed" | "bomb";
+
 type Props = {
   onScore: (value: number) => void;
-  onGameOver: () => void;
+  onGameOver: (reason: GameOverReason) => void;
   onFinished: () => void;
   onTick: (secondsLeft: number) => void;
 };
@@ -133,7 +135,7 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
               (p as any)._life = 35;
               particles.addChild(p);
             }
-            onGameOverRef.current();
+            onGameOverRef.current("bomb");
           } else {
             const val = 20 + Math.floor(Math.random() * 31); // +20 to +50
             onScoreRef.current(val);
@@ -200,7 +202,7 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
               gameOver = true;
               coins.removeChild(c);
               c.destroy();
-              setTimeout(() => onGameOverRef.current(), 100);
+              onGameOverRef.current("missed");
               return;
             } else {
               // Bomb that went off screen — just remove it, not a game over
