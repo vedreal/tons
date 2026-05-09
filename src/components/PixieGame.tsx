@@ -113,7 +113,7 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
 
         c.x = r + 16 + Math.random() * (app.screen.width - r * 2 - 32);
         c.y = -r - 10;
-        (c as any)._vy = 1.5 + Math.random() * 1.4;
+        (c as any)._vy = 2.5 + Math.random() * 1.8;
         c.eventMode = "static";
         c.cursor = "pointer";
         c.on("pointerdown", () => {
