@@ -20,7 +20,7 @@ function GamePage() {
     const ok = store.spendGameEnergy();
     if (!ok) return;
     setScore(0);
-    setSecondsLeft(15);
+    setSecondsLeft(30);
     setGameKey((k) => k + 1);
     setGameState("playing");
   };
