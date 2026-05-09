@@ -194,7 +194,8 @@ export default function PixieGame({ onCoin, onCombo }: Props) {
       cleanupFns.forEach((f) => f());
       try { app.destroy(true, { children: true }); } catch {}
     };
-  }, [onCoin, onCombo]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return <div ref={hostRef} className="absolute inset-0" />;
 }
