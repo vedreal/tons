@@ -14,7 +14,7 @@ function GamePage() {
   const [gameState, setGameState] = useState<GameState>("idle");
   const [gameKey, setGameKey] = useState(0);
   const [score, setScore] = useState(0);
-  const [secondsLeft, setSecondsLeft] = useState(15);
+  const [secondsLeft, setSecondsLeft] = useState(30);
 
   const handlePlay = () => {
     const ok = store.spendGameEnergy();
@@ -90,7 +90,7 @@ function GamePage() {
             <PixieIcon className="h-20 w-20 animate-float drop-shadow-2xl" />
             <div className="text-center">
               <div className="text-lg font-black text-white">Ready to play?</div>
-              <div className="mt-0.5 text-xs text-white/70">Catch all coins in 15 seconds</div>
+              <div className="mt-0.5 text-xs text-white/70">Catch all coins in 30 seconds</div>
             </div>
             {energy > 0 ? (
               <button

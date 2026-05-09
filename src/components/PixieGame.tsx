@@ -9,7 +9,7 @@ type Props = {
 };
 
 const COIN_IMG = "https://gold-defensive-cattle-30.mypinata.cloud/ipfs/bafkreie6xttzzc7auyoajanpwqnef2cpuvakrs5z7s5h6d4kcgvqmfmu3i";
-const GAME_DURATION = 15;
+const GAME_DURATION = 30;
 const SPAWN_INTERVAL_TICKS = 22; // ticks between spawns (~0.37s at 60fps) — matches original feel
 const BOMB_CHANCE = 0.18;
 
@@ -118,21 +118,24 @@ export default function PixieGame({ onScore, onGameOver, onFinished, onTick }: P
           if (gameOver) return;
           if ((c as any)._isBomb) {
             gameOver = true;
+            // Save position BEFORE removing/destroying
+            const bx = c.x;
+            const by = c.y;
             coins.removeChild(c);
             c.destroy();
-            // small red flash particles
-            for (let i = 0; i < 8; i++) {
-              const p = new Graphics().circle(0, 0, 4).fill(0xff3333);
-              p.x = c.x; p.y = c.y;
-              const ang = (i / 8) * Math.PI * 2;
-              (p as any)._vx = Math.cos(ang) * 5;
-              (p as any)._vy = Math.sin(ang) * 5;
-              (p as any)._life = 30;
+            // red flash particles
+            for (let i = 0; i < 10; i++) {
+              const p = new Graphics().circle(0, 0, 5).fill(0xff3333);
+              p.x = bx; p.y = by;
+              const ang = (i / 10) * Math.PI * 2;
+              (p as any)._vx = Math.cos(ang) * 6;
+              (p as any)._vy = Math.sin(ang) * 6;
+              (p as any)._life = 35;
               particles.addChild(p);
             }
-            setTimeout(() => onGameOverRef.current(), 200);
+            onGameOverRef.current();
           } else {
-            const val = 10 + Math.floor(Math.random() * 5);
+            const val = 20 + Math.floor(Math.random() * 31); // +20 to +50
             onScoreRef.current(val);
             // burst
             for (let i = 0; i < 8; i++) {
