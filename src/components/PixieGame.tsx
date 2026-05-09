@@ -9,6 +9,10 @@ type Props = {
 // Lightweight cartoon coin field + swipe combo ribbon, drawn purely with Graphics.
 export default function PixieGame({ onCoin, onCombo }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const onCoinRef = useRef(onCoin);
+  const onComboRef = useRef(onCombo);
+  onCoinRef.current = onCoin;
+  onComboRef.current = onCombo;
 
   useEffect(() => {
     const host = hostRef.current;
